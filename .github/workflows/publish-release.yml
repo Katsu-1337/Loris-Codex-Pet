@@ -41,6 +41,9 @@ jobs:
           cp "${release_dir}/loris-vpet/spritesheet.webp" "dist/loris-vpet-${major}-spritesheet.webp"
           cp "qa/${version}/contact-sheet.png" "dist/loris-vpet-${major}-contact-sheet.png"
           cp "qa/${version}/validation.json" "dist/loris-vpet-${major}-validation.json"
+          if test -f "qa/${version}/working-preview.gif"; then
+            cp "qa/${version}/working-preview.gif" "dist/loris-vpet-${major}-working-preview.gif"
+          fi
           (cd dist && sha256sum loris-vpet-${major}* > SHA256SUMS.txt)
 
       - name: Publish GitHub Release
@@ -55,12 +58,19 @@ jobs:
             echo "Release ${version} already exists; refusing to overwrite it."
             exit 1
           fi
+          assets=(
+            "dist/loris-vpet-${major}.zip"
+            "dist/loris-vpet-${major}-spritesheet.webp"
+            "dist/loris-vpet-${major}-contact-sheet.png"
+            "dist/loris-vpet-${major}-validation.json"
+            "dist/SHA256SUMS.txt"
+          )
+          if test -f "dist/loris-vpet-${major}-working-preview.gif"; then
+            assets+=("dist/loris-vpet-${major}-working-preview.gif")
+          fi
           gh release create "${version}" \
             --target "${GITHUB_SHA}" \
             --title "Loris Codex Pet ${version} / 萝莉斯 Codex 桌宠 ${version}" \
             --notes-file "releases/${version}/RELEASE_NOTES.md" \
-            "dist/loris-vpet-${major}.zip" \
-            "dist/loris-vpet-${major}-spritesheet.webp" \
-            "dist/loris-vpet-${major}-contact-sheet.png" \
-            "dist/loris-vpet-${major}-validation.json" \
-            "dist/SHA256SUMS.txt"
+            "${assets[@]}"
+
